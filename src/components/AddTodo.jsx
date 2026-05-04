@@ -14,10 +14,10 @@ export default function AddTodo({ onAddTodo }) {
 
   return (
     <>
-      <form onSubmit={handleSubmit}>
+      <form className="add-form" onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="e.g. John Doe"
+          placeholder="Add a new task"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -31,9 +31,11 @@ export default function AddTodo({ onAddTodo }) {
           <option value="true">True</option>
           <option value="false">False</option>
         </select>
-        {description.length > 0
-          ? `You've selected ${description} and it's current status is ${status} click on submit to add the task`
-          : ""}
+        <span className="form-hint">
+          {description.length > 0
+            ? `You've selected ${description} and it's current status is ${status} click on submit to add the task`
+            : ""}
+        </span>
         <button>Submit</button>
       </form>
     </>

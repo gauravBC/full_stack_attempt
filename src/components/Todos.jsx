@@ -1,10 +1,20 @@
-export default function Todos({ todos }) {
+import UpdateTodo from "./UpdateTodo";
+import DeleteTodo from "./DeleteTodo";
+export default function Todos({ todos, updateTodo, deleteTodo }) {
   return (
-    <ol>
+    <ol className="todo-list">
       {todos.map((x) => (
-        <li key={x.id}>
-          <span>{x.text}</span>
-          <span>{x.completed ? "Done ✅" : "Nope ❌"}</span>
+        <li className="todo-item" key={x.id}>
+          <div className="todo-content">
+            <span className="todo-title">{x.text}</span>
+            <span className={x.completed ? "status done" : "status pending"}>
+              {x.completed ? "Done" : "Pending"}
+            </span>
+          </div>
+          <div className="todo-actions">
+            <UpdateTodo updateTodoFun={updateTodo} todo={x} />
+            <DeleteTodo deleteTodoFun={deleteTodo} todo={x} />
+          </div>
         </li>
       ))}
     </ol>

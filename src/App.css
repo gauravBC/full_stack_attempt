@@ -1,38 +1,194 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.app-shell {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  padding: 48px 20px;
+}
+
+.todo-panel {
+  width: min(920px, 100%);
+  margin: 0 auto;
+  padding: 32px;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.app-header {
+  margin-bottom: 28px;
+}
+
+.app-header p {
+  margin: 0 0 6px;
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-header h1 {
+  margin: 0;
+  color: #152238;
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.todo-list {
+  display: grid;
+  gap: 14px;
+  padding: 0;
+  margin: 0 0 28px;
+  list-style: none;
+}
+
+.todo-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  padding: 16px;
+  border: 1px solid #e4e9f0;
+  border-radius: 8px;
+  background: #f8fafc;
 }
 
-.App-link {
-  color: #61dafb;
+.todo-content {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.todo-title {
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  flex: 0 0 auto;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.status.done {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.status.pending {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.todo-actions,
+.add-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.todo-actions input,
+.add-form input,
+.add-form select {
+  height: 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #172033;
+  font: inherit;
+}
+
+.todo-actions input,
+.add-form input {
+  width: 180px;
+  padding: 0 12px;
+}
+
+.add-form {
+  flex-wrap: wrap;
+  padding-top: 22px;
+  border-top: 1px solid #e4e9f0;
+}
+
+.add-form label {
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.add-form input {
+  flex: 1 1 220px;
+}
+
+.add-form select {
+  padding: 0 10px;
+}
+
+button {
+  height: 40px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 14px;
+  background: #2563eb;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.todo-actions button:last-child {
+  background: #e11d48;
+}
+
+.todo-actions button:last-child:hover {
+  background: #be123c;
+}
+
+.form-hint {
+  flex-basis: 100%;
+  min-height: 20px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 24px 12px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .todo-panel {
+    padding: 22px;
+  }
+
+  .todo-item,
+  .todo-actions,
+  .add-form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .todo-content {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .todo-actions,
+  .add-form {
+    display: grid;
+  }
+
+  .todo-actions input,
+  .add-form input,
+  .add-form select,
+  button {
+    width: 100%;
   }
 }
