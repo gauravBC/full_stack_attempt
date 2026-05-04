@@ -14,19 +14,16 @@ function App() {
     setTodoState((dos) => [...dos, todoWithId]);
   }
 
-  function handleUpdateTodo(todo) {
-    if (!todo.text.trim()) return;
-    const newTodoState = todoState.map((x) => (x.id === todo.id ? todo : x));
-
-    setTodoState(newTodoState);
+  function handleDeleteTodo(id) {
+    setTodoState((prev) => prev.filter((x) => x.id !== id));
   }
 
-  function handleDeleteTodo(todo) {
-    if (!todo.text.trim()) return;
-    const newTodoState = todoState
-      .filter((x) => x.id !== todo.id)
-      .map((x) => x);
-    setTodoState(newTodoState);
+  function handleUpdateTodo(updatedTodo) {
+    setTodoState((prev) =>
+      prev.map((x) =>
+        x.id === updatedTodo.id ? { ...x, text: updatedTodo.text } : x,
+      ),
+    );
   }
 
   return (
@@ -36,12 +33,12 @@ function App() {
           <p>Simple Todo</p>
           <h1>Plan the next thing</h1>
         </header>
-      <Todos
-        todos={todoState}
-        updateTodo={handleUpdateTodo}
-        deleteTodo={handleDeleteTodo}
-      />
-      <AddTodo onAddTodo={handleAddTodo} />
+        <Todos
+          todos={todoState}
+          updateTodo={handleUpdateTodo}
+          deleteTodo={handleDeleteTodo}
+        />
+        <AddTodo onAddTodo={handleAddTodo} />
       </section>
     </main>
   );

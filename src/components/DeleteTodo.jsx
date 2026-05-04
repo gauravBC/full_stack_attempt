@@ -1,3 +1,3 @@
-export default function DeleteTodo({ deleteTodoFun, todo }) {
-  return <button onClick={() => deleteTodoFun(todo)}>Delete</button>;
+export default function DeleteTodo({ deleteTodoFun, id }) {
+  return <button onClick={() => deleteTodoFun(id)}>Delete</button>;
 }

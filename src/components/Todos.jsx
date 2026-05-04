@@ -13,7 +13,7 @@ export default function Todos({ todos, updateTodo, deleteTodo }) {
           </div>
           <div className="todo-actions">
             <UpdateTodo updateTodoFun={updateTodo} todo={x} />
-            <DeleteTodo deleteTodoFun={deleteTodo} todo={x} />
+            <DeleteTodo deleteTodoFun={deleteTodo} id={x.id} />
           </div>
         </li>
       ))}

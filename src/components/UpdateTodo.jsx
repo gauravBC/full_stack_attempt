@@ -3,10 +3,10 @@ import { useState } from "react";
 export default function UpdateTodo(props) {
   const [updateText, setUpdateText] = useState("");
   function handleOnClick(e) {
-    const { ...updatedTodoItem } = props.todo;
-    if (updatedTodoItem.text === updateText) return;
-    updatedTodoItem.text = updateText;
-    props.updateTodoFun(updatedTodoItem);
+    props.updateTodoFun({
+      ...props.todo,
+      text: updateText,
+    });
   }
   return (
     <>
