@@ -1,8 +1,10 @@
 import { useState } from "react";
 
 export default function UpdateTodo(props) {
-  const [updateText, setUpdateText] = useState("");
+  const [updateText, setUpdateText] = useState(props.todo.text);
   function handleOnClick(e) {
+    e.stopPropagation();
+    if (!updateText.trim()) return;
     props.updateTodoFun({
       ...props.todo,
       text: updateText,
