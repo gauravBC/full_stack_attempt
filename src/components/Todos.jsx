@@ -1,14 +1,17 @@
 import UpdateTodo from "./UpdateTodo";
 import DeleteTodo from "./DeleteTodo";
-export default function Todos({ todos, updateTodo, deleteTodo }) {
+export default function Todos({ todos, updateTodo, deleteTodo, toggleTodo }) {
   return (
     <ol className="todo-list">
       {todos.map((x) => (
         <li className="todo-item" key={x.id}>
           <div className="todo-content">
             <span className="todo-title">{x.text}</span>
-            <span className={x.completed ? "status done" : "status pending"}>
-              {x.completed ? "Done" : "Pending"}
+            <span
+              className={x.completed ? "status done" : "status pending"}
+              onClick={() => toggleTodo(x.id)}
+            >
+              {x.completed ? "Done✅" : "Pending❌"}
             </span>
           </div>
           <div className="todo-actions">

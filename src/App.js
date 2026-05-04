@@ -26,6 +26,13 @@ function App() {
     );
   }
 
+  function handleToggleTodo(id) {
+    setTodoState((prev) =>
+      prev.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+      ),
+    );
+  }
   return (
     <main className="app-shell">
       <section className="todo-panel">
@@ -37,6 +44,7 @@ function App() {
           todos={todoState}
           updateTodo={handleUpdateTodo}
           deleteTodo={handleDeleteTodo}
+          toggleTodo={handleToggleTodo}
         />
         <AddTodo onAddTodo={handleAddTodo} />
       </section>
