@@ -5,12 +5,20 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #eef4f8;
+  background:
+    linear-gradient(135deg, rgba(239, 246, 255, 0.85), rgba(240, 253, 250, 0.85)),
+    #eef4f8;
   color: #172033;
 }
 
 * {
   box-sizing: border-box;
+}
+
+input,
+button,
+select {
+  font: inherit;
 }
 
 code {

@@ -1,6 +1,7 @@
-import UpdateTodo from "./UpdateTodo";
 import DeleteTodo from "./DeleteTodo";
-export default function Todos({ todos, updateTodo, deleteTodo, toggleTodo }) {
+import EditTodo from "./EditTodo";
+
+export default function Todos({ todos, saveEdit, deleteTodo, toggleTodo }) {
   return (
     <ol className="todo-list">
       {todos.map((x) => (
@@ -15,7 +16,8 @@ export default function Todos({ todos, updateTodo, deleteTodo, toggleTodo }) {
             </span>
           </div>
           <div className="todo-actions">
-            <UpdateTodo updateTodoFun={updateTodo} todo={x} />
+            {/* <UpdateTodo updateTodoFun={updateTodo} todo={x} /> */}
+            <EditTodo saveEdit={saveEdit} todo={x} />
             <DeleteTodo deleteTodoFun={deleteTodo} id={x.id} />
           </div>
         </li>
