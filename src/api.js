@@ -47,17 +47,24 @@ export async function saveGroceryList(username, items) {
 }
 
 export async function loginUser(username, password) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-  if (!response.ok) {
-    throw new Error("Invalid username or password");
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response, "Invalid username or password"));
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("Backend is not reachable from this hosted site. Configure REACT_APP_API_BASE_URL with a public backend HTTPS URL, or use ?MockFlow=Y for UI testing.");
+    }
+    throw error;
   }
-
-  return response.json();
 }
 
 

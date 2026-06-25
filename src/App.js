@@ -28,6 +28,66 @@ const fallbackPlan = {
   safetyNotes: [],
 };
 
+
+const mockProfile = {
+  id: "mock-profile",
+  username: "jakka.vikram",
+  age: 29,
+  heightCm: 162,
+  weightKg: 64,
+  pregnancyWeek: 24,
+  foodPreference: "vegetarian_only",
+  eggsAllowed: false,
+  allergies: "peanuts",
+  cuisineRegion: "Indian",
+  budgetLevel: "medium",
+};
+
+const mockPlan = {
+  id: "mock-plan",
+  userId: "jakka.vikram",
+  planDate: new Date().toISOString().slice(0, 10),
+  pregnancyWeek: 24,
+  hydrationGoal: "2.7 L",
+  nutrients: [
+    { label: "Protein", value: "75 g", status: "On track" },
+    { label: "Iron", value: "27 mg", status: "Needs focus" },
+    { label: "Calcium", value: "1,000 mg", status: "On track" },
+  ],
+  meals: [
+    { time: "Breakfast", title: "Vegetable oats with nuts", note: "MockFlow meal based on profile and pantry." },
+    { time: "Lunch", title: "Spinach dal with brown rice", note: "Iron-focused meal for week 24. Add lemon to support absorption." },
+    { time: "Snack", title: "Fruit with yogurt", note: "Calcium support planned around daily nutrition goals." },
+    { time: "Dinner", title: "Paneer curry with chapati", note: "Matched to vegetarian preference and pantry items." },
+  ],
+  groceryList: ["Milk", "Dates", "Chickpeas"],
+  reminders: ["Iron tablet at 4 PM, away from dairy.", "Drink water steadily across the day."],
+  partnerTask: "Prepare dinner tonight and encourage a short walk if approved by the doctor.",
+  safetyNotes: ["MockFlow guidance only.", "Consult a clinician for medical concerns."],
+};
+
+const mockPantry = ["Curd", "Dry Fruits", "Ragi", "Rice", "Spinach"];
+
+function mockUserFor(username) {
+  if (username === "gaurav.kumar") {
+    return {
+      id: "mock-gaurav",
+      username: "gaurav.kumar",
+      firstName: "Gaurav",
+      lastName: "Kumar",
+      email: "gaurav.kumar@example.com",
+    };
+  }
+
+  return {
+    id: "mock-vikram",
+    username: "jakka.vikram",
+    firstName: "Jakka",
+    lastName: "Vikram",
+    email: "jakka.vikram@example.com",
+  };
+}
+
 const defaultDietProfile = {
   age: "",
   heightCm: "",
@@ -121,6 +181,18 @@ function App() {
     setIsDashboardLoading(true);
     setDashboardError("");
 
+    if (mockFlow) {
+      setDietProfile({ ...defaultDietProfile, ...mockProfile, username: user.username });
+      setPlan({ ...mockPlan, userId: user.username });
+      setPantryItems(mockPantry);
+      setPantryText(mockPantry.join(", "));
+      setGroceryText(mockPlan.groceryList.join(", "));
+      setAiStatus({ provider: "mock-flow", model: "query-param", realAiEnabled: false });
+      setListMessage("MockFlow is enabled. This hosted page is running without a backend.");
+      setIsDashboardLoading(false);
+      return;
+    }
+
     try {
       const [partners, profile, savedPlan, pantry] = await Promise.all([
         fetchPartnerContacts(user.username).catch(() => []),
@@ -128,9 +200,7 @@ function App() {
         fetchDailyPlan(user.username),
         fetchPantry(user.username),
       ]);
-      const status = mockFlow
-        ? { provider: "mock-flow", model: "query-param", realAiEnabled: false }
-        : await fetchAiStatus().catch(() => ({ provider: "unknown", model: "", realAiEnabled: false }));
+      const status = await fetchAiStatus().catch(() => ({ provider: "unknown", model: "", realAiEnabled: false }));
 
       if (partners.length > 0) {
         setPartner(partners[0]);
@@ -156,13 +226,21 @@ function App() {
   async function handleLogin() {
     setLoginError("");
 
+    if (mockFlow) {
+      const user = mockUserFor(username);
+      setAuthUser(user);
+      setIsAuthenticated(true);
+      await loadWorkspace(user);
+      return;
+    }
+
     try {
       const response = await loginUser(username, password);
       setAuthUser(response.user);
       setIsAuthenticated(true);
       await loadWorkspace(response.user);
     } catch (error) {
-      setLoginError("Invalid username or password. Try jakka.vikram / Vikram@123 or gaurav.kumar / Gaurav@123.");
+      setLoginError(error.message || "Invalid username or password. Try jakka.vikram / Vikram@123 or gaurav.kumar / Gaurav@123.");
     }
   }
 
@@ -261,6 +339,14 @@ function App() {
     setGenerationError("");
 
     try {
+      if (mockFlow) {
+        const savedItems = splitItems(pantryText);
+        setPantryItems(savedItems);
+        setPantryText(savedItems.join(", "));
+        setListMessage("MockFlow pantry saved locally for this session.");
+        return;
+      }
+
       const savedItems = await savePantry(authUser.username, splitItems(pantryText));
       setPantryItems(savedItems);
       setPantryText(savedItems.join(", "));
@@ -276,6 +362,14 @@ function App() {
     setGenerationError("");
 
     try {
+      if (mockFlow) {
+        const updatedItems = splitItems(groceryText);
+        setPlan((current) => ({ ...current, groceryList: updatedItems }));
+        setGroceryText(updatedItems.join(", "));
+        setListMessage("MockFlow grocery list saved locally for this session.");
+        return;
+      }
+
       const updatedPlan = await saveGroceryList(authUser.username, splitItems(groceryText));
       setPlan(updatedPlan);
       setGroceryText((updatedPlan.groceryList || []).join(", "));
@@ -325,6 +419,16 @@ function App() {
     setDietError("");
 
     try {
+      if (mockFlow) {
+        setDietProfile((current) => ({ ...current, username: authUser.username }));
+        setPlan((current) => ({ ...current, pregnancyWeek: dietProfile.pregnancyWeek }));
+        setDietMessage("MockFlow profile saved locally for this session.");
+        if (activeView === "onboarding") {
+          setActiveView("dashboard");
+        }
+        return;
+      }
+
       const savedProfile = await saveDietProfile({ username: authUser.username, ...dietProfile });
       setDietProfile(savedProfile);
       setPlan((current) => ({ ...current, pregnancyWeek: savedProfile.pregnancyWeek }));
