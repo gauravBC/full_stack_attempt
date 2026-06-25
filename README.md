@@ -85,3 +85,7 @@ http://localhost:3000/?MockFlow=Y
 3. Add Redis caching for today's plan.
 4. Add Kafka consumers for AI generation, pantry vision, and notifications.
 5. Persist AI-generated plans and cache them in Redis.
+
+## Roadmap / TODOs
+
+See [PHASE_1_TODOS.md](PHASE_1_TODOS.md) for the next implementation roadmap.
