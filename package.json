@@ -16,7 +16,13 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "api:dev": "cd backend && mvn spring-boot:run",
+    "api:test": "cd backend && mvn test",
+    "db:up": "docker compose up -d postgres redis kafka",
+    "mobile:start": "cd mobile && npm start",
+    "api:dev:openai": "AI_PROVIDER=openai SERVER_PORT=8081 DATABASE_URL=jdbc:postgresql://localhost:5433/nurtureai npm run api:dev",
+    "api:dev:ollama": "AI_PROVIDER=ollama OLLAMA_MODEL=llama3.2 SERVER_PORT=8081 DATABASE_URL=jdbc:postgresql://localhost:5433/nurtureai npm run api:dev"
   },
   "eslintConfig": {
     "extends": [

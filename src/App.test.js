@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from "@testing-library/react";
+import App from "./App";
 
-test('renders learn react link', () => {
+test("renders NurtureAI dashboard", () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(screen.getByText(/Private pregnancy nutrition guidance/i)).toBeInTheDocument();
+  expect(screen.getByText(/Login to your account/i)).toBeInTheDocument();
 });

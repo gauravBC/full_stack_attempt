@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: nurtureai-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/nurtureai}
+    username: ${DATABASE_USERNAME:nurtureai}
+    password: ${DATABASE_PASSWORD:nurtureai}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: nurtureai-api
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.nurtureai.*
+
+nurtureai:
+  ai:
+    provider: ${AI_PROVIDER:mock}
+    api-key: ${OPENAI_API_KEY:${AI_API_KEY:}}
+    model: ${OPENAI_MODEL:gpt-5.2}
+    responses-url: ${OPENAI_RESPONSES_URL:https://api.openai.com/v1/responses}
+    ollama-url: ${OLLAMA_URL:http://localhost:11434/api/chat}
+    ollama-model: ${OLLAMA_MODEL:llama3.2}
+    timeout-seconds: ${AI_TIMEOUT_SECONDS:45}
+  datasource:
+    read-replicas:
+      - ${READ_REPLICA_1_URL:jdbc:postgresql://localhost:5432/nurtureai}
+      - ${READ_REPLICA_2_URL:jdbc:postgresql://localhost:5432/nurtureai}

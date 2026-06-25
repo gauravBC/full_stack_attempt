@@ -1,70 +1,87 @@
-# Getting Started with Create React App
+# NurtureAI Phase 1
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+NurtureAI is a pregnancy nutrition companion built as a web app, mobile app, and Spring Boot API.
 
-## Available Scripts
+## Architecture
 
-In the project directory, you can run:
+- Web: React.js Create React App
+- Mobile: React Native with Expo
+- Backend: Java 21, Spring Boot
+- Data: PostgreSQL primary with read replica configuration placeholders
+- Cache: Redis
+- Async: Kafka
+- AI: backend-only orchestration layer, currently mocked
 
-### `npm start`
+## Local Development
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Start infrastructure:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+npm run db:up
+```
 
-### `npm test`
+Start backend:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+npm run api:dev
+```
 
-### `npm run build`
+Start web:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Start mobile:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+cd mobile
+npm install
+npm start
+```
 
-### `npm run eject`
+## First API Endpoints
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```text
+POST /api/auth/signup
+POST /api/auth/login
+POST /api/auth/otp/request
+GET  /api/daily-plans/today?userId=demo-user
+POST /api/daily-plans/generate?userId=demo-user
+POST /api/daily-plans/generate-now?userId=demo-user
+GET  /api/pantry?userId=demo-user
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## AI Integration
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Local development uses the mock AI client by default. To run the backend with real OpenAI calls, export your key in the terminal and start the OpenAI script:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+export OPENAI_API_KEY=your_api_key
+npm run api:dev:openai
+```
 
-## Learn More
+The dashboard shows an AI status badge after login. It should say `OpenAI live` when the backend is using the real provider.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+The frontend never calls the AI provider directly. It calls `POST /api/daily-plans/generate-now`, and the backend handles prompts, safety instructions, API credentials, and JSON parsing.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Ollama provider for free local development:
 
-### Code Splitting
+```bash
+ollama pull llama3.2
+npm run api:dev:ollama
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Mock page flow for UI checks:
 
-### Analyzing the Bundle Size
+```text
+http://localhost:3000/?MockFlow=Y
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Next Build Steps
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Replace mocked meal plan data with persisted PostgreSQL records.
+2. Add auth and user onboarding.
+3. Add Redis caching for today's plan.
+4. Add Kafka consumers for AI generation, pantry vision, and notifications.
+5. Persist AI-generated plans and cache them in Redis.
