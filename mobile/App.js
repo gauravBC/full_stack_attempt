@@ -17,6 +17,20 @@ const plan = {
     ["Dinner", "Paneer curry with chapati"],
   ],
   groceries: ["Milk", "Oranges", "Chickpeas", "Almonds"],
+  schedule: [
+    ["06:00", "Morning milk", "Milk with protein powder if approved"],
+    ["08:00", "Breakfast", "Protein-rich breakfast"],
+    ["10:00", "Short snack", "Fruit, salad, dry fruits, or juice"],
+    ["13:00", "Lunch", "Dal/paneer with grains and salad"],
+    ["16:00", "Snack", "Roasted chana, yogurt, nuts, or sprouts"],
+    ["20:00", "Dinner", "Balanced protein, vegetables, and grains"],
+  ],
+  hydrationTracker: {
+    goalMl: 2700,
+    currentMl: 750,
+    gap: "Every 90 min",
+    flavoredWater: "Cucumber lemon mint water",
+  },
 };
 
 export default function App() {
@@ -143,6 +157,31 @@ export default function App() {
             <Text style={styles.rowText}>{title}</Text>
           </View>
         ))}
+      </View>
+
+
+      <View style={styles.panel}>
+        <Text style={styles.eyebrow}>Nutrition Schedule</Text>
+        <Text style={styles.heading}>Timed meals and reminders</Text>
+        {plan.schedule.map(([time, title, foods]) => (
+          <View style={styles.scheduleRow} key={`${time}-${title}`}>
+            <Text style={styles.scheduleTime}>{time}</Text>
+            <View style={styles.scheduleCopy}>
+              <Text style={styles.rowText}>{title}</Text>
+              <Text style={styles.copy}>{foods}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.eyebrow}>Hydration Tracker</Text>
+        <Text style={styles.heading}>{plan.hydrationTracker.currentMl} ml of {plan.hydrationTracker.goalMl} ml</Text>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${Math.round((plan.hydrationTracker.currentMl / plan.hydrationTracker.goalMl) * 100)}%` }]} />
+        </View>
+        <Text style={styles.copy}>Reminder gap: {plan.hydrationTracker.gap}</Text>
+        <Text style={styles.copy}>Optional flavored water: {plan.hydrationTracker.flavoredWater}</Text>
       </View>
 
       <View style={styles.panel}>
@@ -329,4 +368,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
   },
+
+  scheduleRow: {
+    flexDirection: "row",
+    gap: 12,
+    borderTopColor: "#e5e7eb",
+    borderTopWidth: 1,
+    paddingTop: 12,
+  },
+  scheduleTime: {
+    width: 56,
+    color: "#0f766e",
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  scheduleCopy: {
+    flex: 1,
+    gap: 3,
+  },
+  progressTrack: {
+    height: 12,
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: "#e2e8f0",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 999,
+    backgroundColor: "#0f766e",
+  },
+
 });

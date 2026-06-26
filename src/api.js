@@ -196,3 +196,79 @@ export async function savePantry(username, items) {
 
   return response.json();
 }
+
+export async function fetchNutritionSchedule(username) {
+  const response = await fetch(`${API_BASE_URL}/nutrition-schedule?username=${encodeURIComponent(username)}`);
+
+  if (!response.ok) {
+    throw new Error("Unable to load nutrition schedule");
+  }
+
+  return response.json();
+}
+
+export async function saveNutritionSchedule(username, slots) {
+  const response = await fetch(`${API_BASE_URL}/nutrition-schedule`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, slots }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to save nutrition schedule");
+  }
+
+  return response.json();
+}
+
+export async function updateNutritionSlot(username, slotId, changes) {
+  const response = await fetch(`${API_BASE_URL}/nutrition-schedule/slots/${encodeURIComponent(slotId)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, ...changes }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to update nutrition reminder");
+  }
+
+  return response.json();
+}
+
+export async function fetchHydrationPlan(username) {
+  const response = await fetch(`${API_BASE_URL}/hydration?username=${encodeURIComponent(username)}`);
+
+  if (!response.ok) {
+    throw new Error("Unable to load hydration plan");
+  }
+
+  return response.json();
+}
+
+export async function saveHydrationPlan(plan) {
+  const response = await fetch(`${API_BASE_URL}/hydration`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(plan),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to save hydration plan");
+  }
+
+  return response.json();
+}
+
+export async function logHydration(username, amountMl) {
+  const response = await fetch(`${API_BASE_URL}/hydration/logs`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, amountMl }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to log hydration");
+  }
+
+  return response.json();
+}

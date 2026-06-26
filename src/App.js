@@ -8,12 +8,18 @@ import {
   fetchDietProfile,
   fetchPantry,
   fetchPartnerContacts,
+  fetchNutritionSchedule,
+  fetchHydrationPlan,
   generateDailyPlan,
   loginUser,
+  logHydration,
   saveDietProfile,
   saveGroceryList,
+  saveHydrationPlan,
+  saveNutritionSchedule,
   savePantry,
   savePartnerContact,
+  updateNutritionSlot,
   updatePassword,
 } from "./api";
 
@@ -68,6 +74,36 @@ const mockPlan = {
 
 const mockPantry = ["Curd", "Dry Fruits", "Ragi", "Rice", "Spinach"];
 
+const mockNutritionSchedule = {
+  username: "jakka.vikram",
+  totalCalories: 2280,
+  totalProteinGrams: 111,
+  completedSlots: 1,
+  slots: [
+    { id: "mock-0600", time: "06:00", title: "Morning milk", foods: "Milk with pregnancy-safe protein powder if approved by clinician", calories: 220, proteinGrams: 18, reminderEnabled: true, completed: true, sortOrder: 1 },
+    { id: "mock-0800", time: "08:00", title: "Breakfast", foods: "Protein-rich breakfast: oats, dal chilla, idli with sambar, or eggs if allowed", calories: 420, proteinGrams: 22, reminderEnabled: true, completed: false, sortOrder: 2 },
+    { id: "mock-1000", time: "10:00", title: "Short snack", foods: "Salad, fruit, dry fruits, or fresh juice with no added sugar", calories: 180, proteinGrams: 5, reminderEnabled: true, completed: false, sortOrder: 3 },
+    { id: "mock-1300", time: "13:00", title: "Lunch", foods: "Dal or paneer with rice/chapati plus salad and fruit", calories: 560, proteinGrams: 26, reminderEnabled: true, completed: false, sortOrder: 4 },
+    { id: "mock-1600", time: "16:00", title: "Evening snack", foods: "Roasted chana, yogurt, nuts, fruit, or sprouts", calories: 240, proteinGrams: 12, reminderEnabled: true, completed: false, sortOrder: 5 },
+    { id: "mock-1800", time: "18:00", title: "Light fluids", foods: "Fruit, dry fruits, or fresh juice; keep caffeine limited", calories: 160, proteinGrams: 4, reminderEnabled: true, completed: false, sortOrder: 6 },
+    { id: "mock-2000", time: "20:00", title: "Dinner", foods: "Balanced dinner with protein, vegetables, and whole grains", calories: 500, proteinGrams: 24, reminderEnabled: true, completed: false, sortOrder: 7 },
+  ],
+};
+
+const mockHydrationPlan = {
+  username: "jakka.vikram",
+  dailyGoalMl: 2700,
+  currentIntakeMl: 750,
+  progressPercent: 28,
+  reminderGapMinutes: 90,
+  detoxRecipeTitle: "Cucumber lemon mint water",
+  detoxIngredients: "Cucumber slices, lemon slices, mint leaves, water",
+  detoxSteps: "Add washed ingredients to water, refrigerate for 30 minutes, and sip as flavored water. Avoid treating it as a medical detox.",
+  bestTime: "Mid-morning or early evening; keep a gap from iron/calcium tablets if advised by your clinician.",
+  reminderEnabled: true,
+};
+
+
 function mockUserFor(username) {
   if (username === "gaurav.kumar") {
     return {
@@ -117,6 +153,25 @@ function mockMealExplanation(meal) {
 
 function mockChatAnswer(message) {
   return `MockFlow response: I would answer "${message}" using the current profile, pantry, allergies, nutrition goals, and pregnancy week. Use normal mode to call the configured AI provider.`;
+}
+
+
+function summarizeNutrition(slots) {
+  const safeSlots = slots || [];
+  return {
+    totalCalories: safeSlots.reduce((sum, slot) => sum + Number(slot.calories || 0), 0),
+    totalProteinGrams: safeSlots.reduce((sum, slot) => sum + Number(slot.proteinGrams || 0), 0),
+    completedSlots: safeSlots.filter((slot) => slot.completed).length,
+  };
+}
+
+function normalizeHydration(plan) {
+  const goal = Number(plan.dailyGoalMl || 0);
+  const intake = Number(plan.currentIntakeMl || 0);
+  return {
+    ...plan,
+    progressPercent: goal > 0 ? Math.min(100, Math.round((intake / goal) * 100)) : 0,
+  };
 }
 
 function formatFoodPreference(value) {
@@ -172,6 +227,13 @@ function App() {
     relationship: "partner",
     notificationsEnabled: true,
   });
+  const [nutritionSchedule, setNutritionSchedule] = useState({ username: "", totalCalories: 0, totalProteinGrams: 0, completedSlots: 0, slots: [] });
+  const [nutritionMessage, setNutritionMessage] = useState("");
+  const [nutritionError, setNutritionError] = useState("");
+  const [hydrationPlan, setHydrationPlan] = useState(mockHydrationPlan);
+  const [hydrationMessage, setHydrationMessage] = useState("");
+  const [hydrationError, setHydrationError] = useState("");
+  const [waterAmount, setWaterAmount] = useState(250);
 
   const displayName = [authUser?.firstName, authUser?.lastName].filter(Boolean).join(" ") || authUser?.username || "there";
   const hasProfileBasics = Boolean(dietProfile.age && dietProfile.heightCm && dietProfile.weightKg);
@@ -188,17 +250,21 @@ function App() {
       setPantryText(mockPantry.join(", "));
       setGroceryText(mockPlan.groceryList.join(", "));
       setAiStatus({ provider: "mock-flow", model: "query-param", realAiEnabled: false });
+      setNutritionSchedule({ ...mockNutritionSchedule, username: user.username });
+      setHydrationPlan(normalizeHydration({ ...mockHydrationPlan, username: user.username }));
       setListMessage("MockFlow is enabled. This hosted page is running without a backend.");
       setIsDashboardLoading(false);
       return;
     }
 
     try {
-      const [partners, profile, savedPlan, pantry] = await Promise.all([
+      const [partners, profile, savedPlan, pantry, schedule, hydration] = await Promise.all([
         fetchPartnerContacts(user.username).catch(() => []),
         fetchDietProfile(user.username),
         fetchDailyPlan(user.username),
         fetchPantry(user.username),
+        fetchNutritionSchedule(user.username),
+        fetchHydrationPlan(user.username),
       ]);
       const status = await fetchAiStatus().catch(() => ({ provider: "unknown", model: "", realAiEnabled: false }));
 
@@ -211,6 +277,8 @@ function App() {
       setPantryItems(pantry);
       setPantryText(pantry.join(", "));
       setGroceryText((savedPlan.groceryList || []).join(", "));
+      setNutritionSchedule(schedule);
+      setHydrationPlan(hydration);
       setAiStatus(status);
 
       if (!profile.age || !profile.heightCm || !profile.weightKg) {
@@ -445,6 +513,124 @@ function App() {
     setDietProfile((current) => ({ ...current, [field]: value }));
   }
 
+
+  async function handleNutritionFieldChange(slotId, field, value) {
+    setNutritionMessage("");
+    setNutritionError("");
+    setNutritionSchedule((current) => {
+      const slots = current.slots.map((slot) => slot.id === slotId ? { ...slot, [field]: value } : slot);
+      return { ...current, ...summarizeNutrition(slots), slots };
+    });
+  }
+
+  async function handleNutritionToggle(slot, field, value) {
+    setNutritionMessage("");
+    setNutritionError("");
+
+    if (mockFlow) {
+      handleNutritionFieldChange(slot.id, field, value);
+      setNutritionMessage("MockFlow nutrition reminder updated locally.");
+      return;
+    }
+
+    try {
+      const savedSlot = await updateNutritionSlot(authUser.username, slot.id, { [field]: value });
+      setNutritionSchedule((current) => {
+        const slots = current.slots.map((item) => item.id === slot.id ? savedSlot : item);
+        return { ...current, ...summarizeNutrition(slots), slots };
+      });
+      setNutritionMessage(field === "completed" ? "Meal completion updated." : "Reminder setting updated.");
+    } catch (error) {
+      setNutritionError("Nutrition reminder could not be updated.");
+    }
+  }
+
+  async function handleNutritionSave(event) {
+    event.preventDefault();
+    setNutritionMessage("");
+    setNutritionError("");
+
+    try {
+      const slots = nutritionSchedule.slots.map((slot, index) => ({
+        ...slot,
+        calories: Number(slot.calories || 0),
+        proteinGrams: Number(slot.proteinGrams || 0),
+        sortOrder: Number(slot.sortOrder || index + 1),
+        reminderEnabled: Boolean(slot.reminderEnabled),
+        completed: Boolean(slot.completed),
+      }));
+
+      if (mockFlow) {
+        setNutritionSchedule((current) => ({ ...current, ...summarizeNutrition(slots), slots }));
+        setNutritionMessage("MockFlow nutrition schedule saved locally.");
+        return;
+      }
+
+      const savedSchedule = await saveNutritionSchedule(authUser.username, slots);
+      setNutritionSchedule(savedSchedule);
+      setNutritionMessage("Nutrition schedule and reminders saved.");
+    } catch (error) {
+      setNutritionError("Nutrition schedule could not be saved.");
+    }
+  }
+
+  function updateHydrationField(field, value) {
+    setHydrationPlan((current) => normalizeHydration({ ...current, [field]: value }));
+  }
+
+  async function handleHydrationSave(event) {
+    event.preventDefault();
+    setHydrationMessage("");
+    setHydrationError("");
+
+    try {
+      const payload = normalizeHydration({
+        ...hydrationPlan,
+        username: authUser.username,
+        dailyGoalMl: Number(hydrationPlan.dailyGoalMl || 0),
+        currentIntakeMl: Number(hydrationPlan.currentIntakeMl || 0),
+        reminderGapMinutes: Number(hydrationPlan.reminderGapMinutes || 90),
+        reminderEnabled: Boolean(hydrationPlan.reminderEnabled),
+      });
+
+      if (mockFlow) {
+        setHydrationPlan(payload);
+        setHydrationMessage("MockFlow hydration plan saved locally.");
+        return;
+      }
+
+      const savedPlan = await saveHydrationPlan(payload);
+      setHydrationPlan(savedPlan);
+      setHydrationMessage("Hydration tracker and reminders saved.");
+    } catch (error) {
+      setHydrationError("Hydration plan could not be saved.");
+    }
+  }
+
+  async function handleHydrationLog(amount) {
+    setHydrationMessage("");
+    setHydrationError("");
+    const safeAmount = Number(amount || 0);
+    if (safeAmount <= 0) {
+      setHydrationError("Enter a water amount greater than zero.");
+      return;
+    }
+
+    try {
+      if (mockFlow) {
+        setHydrationPlan((current) => normalizeHydration({ ...current, currentIntakeMl: Number(current.currentIntakeMl || 0) + safeAmount }));
+        setHydrationMessage(`${safeAmount} ml added locally in MockFlow.`);
+        return;
+      }
+
+      const savedPlan = await logHydration(authUser.username, safeAmount);
+      setHydrationPlan(savedPlan);
+      setHydrationMessage(`${safeAmount} ml added to today's tracker.`);
+    } catch (error) {
+      setHydrationError("Water intake could not be logged.");
+    }
+  }
+
   function renderProfileForm(isOnboarding = false) {
     return (
       <section className="account-grid">
@@ -474,6 +660,85 @@ function App() {
             <label>Food Allergic To?<input onChange={(event) => updateDietField("allergies", event.target.value)} placeholder="Peanuts, shellfish, lactose..." type="text" value={dietProfile.allergies || ""} /></label>
             <label className="checkbox-row"><input checked={Boolean(dietProfile.eggsAllowed)} onChange={(event) => updateDietField("eggsAllowed", event.target.checked)} type="checkbox" />Can eat eggs</label>
             <button className="primary-action" type="submit">{isOnboarding ? "Save and Continue" : "Save Profile"}</button>
+          </form>
+        </section>
+      </section>
+    );
+  }
+
+
+  function renderNutritionSchedule() {
+    const slots = nutritionSchedule.slots || [];
+    return (
+      <section className="account-grid">
+        <section className="section-block account-hero">
+          <p className="eyebrow">Nutrition Schedule</p>
+          <h2>Timed meals and reminders</h2>
+          <p>Plan the full day: morning milk, breakfast, snacks, lunch, evening fluids, and dinner. Calories and protein are tracked so the plan is easier to review.</p>
+          <div className="schedule-summary">
+            <span>{nutritionSchedule.totalCalories || 0} kcal planned</span>
+            <span>{nutritionSchedule.totalProteinGrams || 0} g protein</span>
+            <span>{nutritionSchedule.completedSlots || 0}/{slots.length} completed</span>
+          </div>
+        </section>
+
+        {(nutritionMessage || nutritionError) && <div className={nutritionMessage ? "success-banner" : "error-banner"}>{nutritionMessage || nutritionError}</div>}
+
+        <form className="section-block schedule-editor" onSubmit={handleNutritionSave}>
+          {slots.length === 0 ? <div className="empty-state inline-empty"><strong>No nutrition schedule yet.</strong><span>Save a schedule from the defaults or restart the backend after migrations run.</span></div> : slots.map((slot) => (
+            <article className="schedule-row" key={slot.id}>
+              <label>Time<input onChange={(event) => handleNutritionFieldChange(slot.id, "time", event.target.value)} type="time" value={slot.time || ""} /></label>
+              <label>Meal<input onChange={(event) => handleNutritionFieldChange(slot.id, "title", event.target.value)} type="text" value={slot.title || ""} /></label>
+              <label className="wide-field">Suggested food<textarea onChange={(event) => handleNutritionFieldChange(slot.id, "foods", event.target.value)} rows="2" value={slot.foods || ""} /></label>
+              <label>Calories<input min="0" onChange={(event) => handleNutritionFieldChange(slot.id, "calories", Number(event.target.value))} type="number" value={slot.calories || 0} /></label>
+              <label>Protein (g)<input min="0" onChange={(event) => handleNutritionFieldChange(slot.id, "proteinGrams", Number(event.target.value))} type="number" value={slot.proteinGrams || 0} /></label>
+              <label className="checkbox-row compact-check"><input checked={Boolean(slot.reminderEnabled)} onChange={(event) => handleNutritionToggle(slot, "reminderEnabled", event.target.checked)} type="checkbox" />Reminder</label>
+              <label className="checkbox-row compact-check"><input checked={Boolean(slot.completed)} onChange={(event) => handleNutritionToggle(slot, "completed", event.target.checked)} type="checkbox" />Done</label>
+            </article>
+          ))}
+          <button className="primary-action" type="submit">Save Nutrition Schedule</button>
+        </form>
+      </section>
+    );
+  }
+
+  function renderHydrationTracker() {
+    return (
+      <section className="account-grid">
+        <section className="section-block hydration-hero">
+          <div>
+            <p className="eyebrow">Hydration Tracker</p>
+            <h2>{hydrationPlan.currentIntakeMl || 0} ml of {hydrationPlan.dailyGoalMl || 0} ml</h2>
+            <p>Track normal water intake and keep gentle reminders through the day. Flavored water is optional and should not replace clinician guidance.</p>
+          </div>
+          <div className="water-ring" aria-label="Hydration progress"><strong>{hydrationPlan.progressPercent || 0}%</strong><span>today</span></div>
+        </section>
+
+        {(hydrationMessage || hydrationError) && <div className={hydrationMessage ? "success-banner" : "error-banner"}>{hydrationMessage || hydrationError}</div>}
+
+        <section className="hydration-grid">
+          <form className="section-block hydration-card" onSubmit={handleHydrationSave}>
+            <div className="section-heading"><p className="eyebrow">Daily Water</p><h2>Goal and reminders</h2></div>
+            <div className="progress-track"><span style={{ width: `${hydrationPlan.progressPercent || 0}%` }} /></div>
+            <div className="quick-log">
+              <button onClick={() => handleHydrationLog(250)} type="button">+250 ml</button>
+              <button onClick={() => handleHydrationLog(500)} type="button">+500 ml</button>
+              <label>Custom ml<input min="1" onChange={(event) => setWaterAmount(Number(event.target.value))} type="number" value={waterAmount} /></label>
+              <button className="secondary-action" onClick={() => handleHydrationLog(waterAmount)} type="button">Add Water</button>
+            </div>
+            <label>Daily goal (ml)<input min="500" onChange={(event) => updateHydrationField("dailyGoalMl", Number(event.target.value))} type="number" value={hydrationPlan.dailyGoalMl || 0} /></label>
+            <label>Reminder gap (minutes)<input min="15" onChange={(event) => updateHydrationField("reminderGapMinutes", Number(event.target.value))} type="number" value={hydrationPlan.reminderGapMinutes || 90} /></label>
+            <label className="checkbox-row"><input checked={Boolean(hydrationPlan.reminderEnabled)} onChange={(event) => updateHydrationField("reminderEnabled", event.target.checked)} type="checkbox" />Enable hydration reminders</label>
+            <button className="primary-action" type="submit">Save Hydration Plan</button>
+          </form>
+
+          <form className="section-block hydration-card" onSubmit={handleHydrationSave}>
+            <div className="section-heading"><p className="eyebrow">Flavored Water</p><h2>Recipe and best time</h2></div>
+            <label>Recipe title<input onChange={(event) => updateHydrationField("detoxRecipeTitle", event.target.value)} type="text" value={hydrationPlan.detoxRecipeTitle || ""} /></label>
+            <label>Ingredients<textarea onChange={(event) => updateHydrationField("detoxIngredients", event.target.value)} rows="3" value={hydrationPlan.detoxIngredients || ""} /></label>
+            <label>How to prepare<textarea onChange={(event) => updateHydrationField("detoxSteps", event.target.value)} rows="4" value={hydrationPlan.detoxSteps || ""} /></label>
+            <label>Best time<input onChange={(event) => updateHydrationField("bestTime", event.target.value)} type="text" value={hydrationPlan.bestTime || ""} /></label>
+            <button className="primary-action" type="submit">Save Recipe</button>
           </form>
         </section>
       </section>
@@ -526,7 +791,7 @@ function App() {
         <header className="topbar app-topbar">
           <div>
             <p className="eyebrow">NurtureAI Phase 1</p>
-            <h1>{activeView === "dashboard" ? "Pregnancy nutrition dashboard" : activeView === "account" ? "My Account" : "Profile Setup"}</h1>
+            <h1>{activeView === "dashboard" ? "Pregnancy nutrition dashboard" : activeView === "nutrition" ? "Nutrition Schedule" : activeView === "hydration" ? "Hydration Tracker" : activeView === "account" ? "My Account" : "Profile Setup"}</h1>
             <p className="topbar-subtitle">Signed in as {displayName}</p>
             <div className={aiStatus.realAiEnabled ? "ai-status live" : "ai-status mock"}>
               {mockFlow ? "MockFlow enabled" : aiStatus.realAiEnabled ? `${aiStatus.provider} live` : "Mock AI"}{aiStatus.model ? ` · ${aiStatus.model}` : ""}
@@ -534,6 +799,8 @@ function App() {
           </div>
           <div className="topbar-actions">
             <button className={activeView === "dashboard" ? "nav-action active" : "nav-action"} onClick={() => setActiveView("dashboard")} type="button">Dashboard</button>
+            <button className={activeView === "nutrition" ? "nav-action active" : "nav-action"} onClick={() => setActiveView("nutrition")} type="button">Nutrition</button>
+            <button className={activeView === "hydration" ? "nav-action active" : "nav-action"} onClick={() => setActiveView("hydration")} type="button">Hydration</button>
             <button className={activeView === "onboarding" ? "nav-action active" : "nav-action"} onClick={() => setActiveView("onboarding")} type="button">Profile Setup</button>
             <button className={activeView === "account" ? "nav-action active" : "nav-action"} onClick={() => setActiveView("account")} type="button">My Account</button>
             {activeView === "dashboard" && <button className="primary-action" disabled={isGenerating || !hasProfileBasics} onClick={handleGeneratePlan}>{isGenerating ? "Generating..." : "Generate Plan"}</button>}
@@ -594,7 +861,7 @@ function App() {
               </>
             )}
           </>
-        ) : activeView === "onboarding" ? renderProfileForm(true) : (
+        ) : activeView === "nutrition" ? renderNutritionSchedule() : activeView === "hydration" ? renderHydrationTracker() : activeView === "onboarding" ? renderProfileForm(true) : (
           <section className="account-grid">
             <section className="section-block account-hero"><p className="eyebrow">My Account</p><h2>{displayName}</h2><p>Manage sign-in security and partner contact details so future reminders can be sent to both parents.</p><div className="account-meta"><span>{authUser?.username}</span><span>{authUser?.email}</span></div></section>
             {(accountMessage || accountError) && <div className={accountMessage ? "success-banner" : "error-banner"}>{accountMessage || accountError}</div>}

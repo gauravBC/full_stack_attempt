@@ -858,3 +858,179 @@ button:disabled {
   background: #fff7ed;
   color: #9a3412;
 }
+
+
+.schedule-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.schedule-summary span {
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 8px 11px;
+  font-weight: 800;
+}
+
+.schedule-editor {
+  display: grid;
+  gap: 16px;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 110px minmax(140px, 0.8fr) minmax(240px, 1.4fr) 110px 120px auto auto;
+  gap: 12px;
+  align-items: end;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fbfcfd;
+  padding: 14px;
+}
+
+.schedule-row label,
+.hydration-card label {
+  display: grid;
+  gap: 7px;
+  color: #475569;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.schedule-row input,
+.schedule-row textarea,
+.hydration-card input,
+.hydration-card textarea {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #172033;
+  padding: 9px 11px;
+  font: inherit;
+  outline: none;
+}
+
+.schedule-row textarea,
+.hydration-card textarea {
+  resize: vertical;
+}
+
+.schedule-row input:focus,
+.schedule-row textarea:focus,
+.hydration-card input:focus,
+.hydration-card textarea:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
+}
+
+.compact-check {
+  min-width: 92px;
+  align-self: center;
+  margin-bottom: 2px;
+}
+
+.hydration-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  gap: 24px;
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.9)),
+    #ffffff;
+}
+
+.water-ring {
+  display: grid;
+  place-items: center;
+  justify-self: end;
+  width: 142px;
+  aspect-ratio: 1;
+  border: 12px solid #bae6fd;
+  border-top-color: #0f766e;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f766e;
+}
+
+.water-ring strong {
+  color: #0f766e;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.water-ring span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.hydration-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.hydration-card {
+  display: grid;
+  gap: 14px;
+}
+
+.progress-track {
+  height: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0f766e;
+}
+
+.quick-log {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.secondary-action {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+}
+
+.secondary-action:hover {
+  border-color: #0f766e;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+@media (max-width: 1180px) {
+  .schedule-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .schedule-row .wide-field {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 920px) {
+  .hydration-hero,
+  .hydration-grid,
+  .quick-log {
+    grid-template-columns: 1fr;
+  }
+
+  .water-ring {
+    justify-self: start;
+  }
+}
