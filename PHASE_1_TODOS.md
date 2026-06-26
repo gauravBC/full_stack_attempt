@@ -15,8 +15,10 @@ These are the next major TODOs for the NurtureAI app after the current Phase 1 p
 
 ## 2. Add Features/Screens Suggested by Vikram
 
-- Capture Vikram's complete screen/feature list.
-- Prioritize the screens into Phase 1.1 backlog.
+Detailed notes are stored in [VIKRAM_FEATURE_NOTES.md](VIKRAM_FEATURE_NOTES.md).
+
+- Capture Vikram's complete screen/feature list. Completed initial capture from handwritten notes.
+- Prioritize the screens into Phase 1.1 backlog, starting with nutrition schedule, hydration, tablet reminders, and walking tracker.
 - Implement one screen at a time with backend persistence.
 - Keep layout mobile-responsive and consistent with the current dashboard/account/profile navigation.
 - Add empty, loading, success, and error states for every new screen.
