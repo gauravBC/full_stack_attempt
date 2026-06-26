@@ -883,7 +883,7 @@ button:disabled {
 
 .schedule-row {
   display: grid;
-  grid-template-columns: 110px minmax(140px, 0.8fr) minmax(240px, 1.4fr) 110px 120px auto auto;
+  grid-template-columns: 150px minmax(180px, 0.85fr) minmax(320px, 1.4fr) 110px 120px 168px;
   gap: 12px;
   align-items: end;
   border: 1px solid #e2e8f0;
@@ -901,9 +901,9 @@ button:disabled {
   font-weight: 800;
 }
 
-.schedule-row input,
+.schedule-row input:not([type="checkbox"]),
 .schedule-row textarea,
-.hydration-card input,
+.hydration-card input:not([type="checkbox"]),
 .hydration-card textarea {
   width: 100%;
   min-height: 42px;
@@ -921,12 +921,39 @@ button:disabled {
   resize: vertical;
 }
 
-.schedule-row input:focus,
+.schedule-row input:not([type="checkbox"]):focus,
 .schedule-row textarea:focus,
 .hydration-card input:focus,
 .hydration-card textarea:focus {
   border-color: #0f766e;
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
+}
+
+.schedule-toggles {
+  display: grid;
+  gap: 8px;
+  align-self: end;
+  min-height: 42px;
+}
+
+.switch-check {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px !important;
+  min-height: 26px;
+  color: #475569;
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.switch-check input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: #0f766e;
 }
 
 .compact-check {
@@ -1018,8 +1045,13 @@ button:disabled {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .schedule-row .wide-field {
+  .schedule-row .wide-field,
+  .schedule-toggles {
     grid-column: 1 / -1;
+  }
+
+  .schedule-toggles {
+    grid-template-columns: repeat(2, max-content);
   }
 }
 

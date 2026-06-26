@@ -692,8 +692,10 @@ function App() {
               <label className="wide-field">Suggested food<textarea onChange={(event) => handleNutritionFieldChange(slot.id, "foods", event.target.value)} rows="2" value={slot.foods || ""} /></label>
               <label>Calories<input min="0" onChange={(event) => handleNutritionFieldChange(slot.id, "calories", Number(event.target.value))} type="number" value={slot.calories || 0} /></label>
               <label>Protein (g)<input min="0" onChange={(event) => handleNutritionFieldChange(slot.id, "proteinGrams", Number(event.target.value))} type="number" value={slot.proteinGrams || 0} /></label>
-              <label className="checkbox-row compact-check"><input checked={Boolean(slot.reminderEnabled)} onChange={(event) => handleNutritionToggle(slot, "reminderEnabled", event.target.checked)} type="checkbox" />Reminder</label>
-              <label className="checkbox-row compact-check"><input checked={Boolean(slot.completed)} onChange={(event) => handleNutritionToggle(slot, "completed", event.target.checked)} type="checkbox" />Done</label>
+              <div className="schedule-toggles" aria-label={`${slot.title} reminder controls`}>
+                <label className="switch-check"><input checked={Boolean(slot.reminderEnabled)} onChange={(event) => handleNutritionToggle(slot, "reminderEnabled", event.target.checked)} type="checkbox" />Reminder</label>
+                <label className="switch-check"><input checked={Boolean(slot.completed)} onChange={(event) => handleNutritionToggle(slot, "completed", event.target.checked)} type="checkbox" />Done</label>
+              </div>
             </article>
           ))}
           <button className="primary-action" type="submit">Save Nutrition Schedule</button>
