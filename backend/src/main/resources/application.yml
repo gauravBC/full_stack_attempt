@@ -1,11 +1,11 @@
 server:
-  port: 8080
+  port: ${PORT:${SERVER_PORT:8080}}
 
 spring:
   application:
     name: nurtureai-backend
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/nurtureai}
+    url: ${JDBC_DATABASE_URL:${DATABASE_URL:jdbc:postgresql://localhost:5432/nurtureai}}
     username: ${DATABASE_USERNAME:nurtureai}
     password: ${DATABASE_PASSWORD:nurtureai}
   jpa:
@@ -36,6 +36,9 @@ nurtureai:
     api-key: ${OPENAI_API_KEY:${AI_API_KEY:}}
     model: ${OPENAI_MODEL:gpt-5.2}
     responses-url: ${OPENAI_RESPONSES_URL:https://api.openai.com/v1/responses}
+    groq-api-key: ${GROQ_API_KEY:}
+    groq-model: ${GROQ_MODEL:llama-3.1-8b-instant}
+    groq-chat-url: ${GROQ_CHAT_URL:https://api.groq.com/openai/v1/chat/completions}
     ollama-url: ${OLLAMA_URL:http://localhost:11434/api/chat}
     ollama-model: ${OLLAMA_MODEL:llama3.2}
     timeout-seconds: ${AI_TIMEOUT_SECONDS:45}
@@ -43,3 +46,6 @@ nurtureai:
     read-replicas:
       - ${READ_REPLICA_1_URL:jdbc:postgresql://localhost:5432/nurtureai}
       - ${READ_REPLICA_2_URL:jdbc:postgresql://localhost:5432/nurtureai}
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://localhost:19006,http://127.0.0.1:19006}

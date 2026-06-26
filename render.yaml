@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: nurtureai-backend
+    env: docker
+    plan: free
+    rootDir: backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: AI_PROVIDER
+        value: groq
+      - key: GROQ_MODEL
+        value: llama-3.1-8b-instant
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://nurtureai07.vercel.app,http://localhost:3000,http://127.0.0.1:3000
+      - key: JDBC_DATABASE_URL
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

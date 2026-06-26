@@ -8,6 +8,9 @@ public record AiProperties(
     String apiKey,
     String model,
     String responsesUrl,
+    String groqApiKey,
+    String groqModel,
+    String groqChatUrl,
     String ollamaUrl,
     String ollamaModel,
     int timeoutSeconds
@@ -21,6 +24,14 @@ public record AiProperties(
         return openAiRequested() && apiKey != null && !apiKey.isBlank();
     }
 
+    public boolean groqRequested() {
+        return "groq".equalsIgnoreCase(provider) || "grok".equalsIgnoreCase(provider);
+    }
+
+    public boolean groqEnabled() {
+        return groqRequested() && groqApiKey != null && !groqApiKey.isBlank();
+    }
+
     public boolean ollamaEnabled() {
         return "ollama".equalsIgnoreCase(provider);
     }
@@ -29,6 +40,9 @@ public record AiProperties(
         if (openAiEnabled()) {
             return "openai";
         }
+        if (groqEnabled()) {
+            return "groq";
+        }
         if (ollamaEnabled()) {
             return "ollama";
         }
@@ -36,6 +50,9 @@ public record AiProperties(
     }
 
     public String activeModel() {
+        if (groqEnabled()) {
+            return groqModel();
+        }
         if (ollamaEnabled()) {
             return ollamaModel();
         }

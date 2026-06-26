@@ -17,6 +17,14 @@ public class AiClientConfig {
             throw new IllegalStateException("AI_PROVIDER=openai requires OPENAI_API_KEY to be set on the backend.");
         }
 
+        if (properties.groqEnabled()) {
+            return new GroqMealPlanClient(properties, restClientBuilder.build());
+        }
+
+        if (properties.groqRequested()) {
+            throw new IllegalStateException("AI_PROVIDER=groq requires GROQ_API_KEY to be set on the backend.");
+        }
+
         if (properties.ollamaEnabled()) {
             return new OllamaMealPlanClient(properties, restClientBuilder.build());
         }

@@ -30,12 +30,20 @@ public class AiAssistantService {
     }
 
     public AiStatusResponse status() {
-        return new AiStatusResponse(properties.activeProvider(), properties.activeModel(), properties.openAiEnabled() || properties.ollamaEnabled());
+        return new AiStatusResponse(properties.activeProvider(), properties.activeModel(), properties.openAiEnabled() || properties.groqEnabled() || properties.ollamaEnabled());
     }
 
     public AiAnswerResponse chat(ChatRequest request) {
         if (properties.ollamaEnabled()) {
             return new AiAnswerResponse(callOllama(
+                "Answer as NurtureAI, a cautious pregnancy nutrition assistant. "
+                    + "Be warm, practical, concise, and never diagnose. Tell the user to consult a clinician for medical concerns.",
+                "User question: " + request.message() + "\nContext: " + toJson(request)
+            ));
+        }
+
+        if (properties.groqEnabled()) {
+            return new AiAnswerResponse(callGroq(
                 "Answer as NurtureAI, a cautious pregnancy nutrition assistant. "
                     + "Be warm, practical, concise, and never diagnose. Tell the user to consult a clinician for medical concerns.",
                 "User question: " + request.message() + "\nContext: " + toJson(request)
@@ -56,6 +64,14 @@ public class AiAssistantService {
     public AiAnswerResponse explainMeal(MealExplanationRequest request) {
         if (properties.ollamaEnabled()) {
             return new AiAnswerResponse(callOllama(
+                "Explain why a meal may be suggested during pregnancy. Keep it practical, evidence-informed, and concise. "
+                    + "Mention key nutrients, pantry fit, timing/safety considerations, and remind that this is not medical advice.",
+                "Meal explanation request: " + toJson(request)
+            ));
+        }
+
+        if (properties.groqEnabled()) {
+            return new AiAnswerResponse(callGroq(
                 "Explain why a meal may be suggested during pregnancy. Keep it practical, evidence-informed, and concise. "
                     + "Mention key nutrients, pantry fit, timing/safety considerations, and remind that this is not medical advice.",
                 "Meal explanation request: " + toJson(request)
@@ -103,6 +119,53 @@ public class AiAssistantService {
         }
     }
 
+
+    private String callGroq(String developerPrompt, String userPrompt) {
+        Map<String, Object> body = Map.of(
+            "model", properties.groqModel(),
+            "messages", List.of(
+                Map.of("role", "system", "content", developerPrompt),
+                Map.of("role", "user", "content", userPrompt)
+            )
+        );
+
+        try {
+            String response = restClient.post()
+                .uri(properties.groqChatUrl())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + properties.groqApiKey())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .body(String.class);
+
+            return extractGroqContent(response);
+        } catch (RestClientResponseException exception) {
+            throw new AiProviderException(resolveStatus(exception), resolveGroqMessage(exception));
+        }
+    }
+
+    private String extractGroqContent(String response) {
+        try {
+            JsonNode root = objectMapper.readTree(response);
+            String content = root.path("choices").path(0).path("message").path("content").asText();
+            if (content == null || content.isBlank()) {
+                throw new IllegalStateException("Groq response did not include choices[0].message.content");
+            }
+            return content;
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Unable to parse Groq assistant response", exception);
+        }
+    }
+
+    private String resolveGroqMessage(RestClientResponseException exception) {
+        if (exception.getStatusCode().value() == 401) {
+            return "Groq rejected the API key. Check GROQ_API_KEY and restart the backend.";
+        }
+        if (exception.getStatusCode().value() == 429) {
+            return "Groq rate limit was reached. Wait briefly and try again.";
+        }
+        return "Groq request failed with status " + exception.getStatusCode().value() + ".";
+    }
 
 
     private String callOllama(String developerPrompt, String userPrompt) {

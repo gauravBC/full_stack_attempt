@@ -91,3 +91,7 @@ http://localhost:3000/?MockFlow=Y
 See [PHASE_1_TODOS.md](PHASE_1_TODOS.md) for the next implementation roadmap.
 
 Additional feature notes from handwritten layouts are captured in [VIKRAM_FEATURE_NOTES.md](VIKRAM_FEATURE_NOTES.md).
+
+## Hosting
+
+- [Backend Hosting Guide](BACKEND_HOSTING_GUIDE.md)
