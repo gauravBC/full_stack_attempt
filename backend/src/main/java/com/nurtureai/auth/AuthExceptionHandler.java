@@ -14,6 +14,12 @@ public class AuthExceptionHandler {
         return new ErrorResponse("Invalid username or password");
     }
 
+    @ExceptionHandler(DuplicateAccountException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    ErrorResponse duplicateAccount() {
+        return new ErrorResponse("An account already exists for this username, phone number, or email");
+    }
+
     record ErrorResponse(String message) {
     }
 }

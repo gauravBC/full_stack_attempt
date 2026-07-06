@@ -19,6 +19,7 @@ import {
   saveNutritionSchedule,
   savePantry,
   savePartnerContact,
+  signUpUser,
   updateNutritionSlot,
   updatePassword,
 } from "./api";
@@ -192,6 +193,14 @@ function App() {
   const [authUser, setAuthUser] = useState(null);
   const [username, setUsername] = useState("jakka.vikram");
   const [password, setPassword] = useState("Vikram@123");
+  const [signupForm, setSignupForm] = useState({
+    username: "",
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+  });
   const [loginError, setLoginError] = useState("");
   const [plan, setPlan] = useState(fallbackPlan);
   const [pantryItems, setPantryItems] = useState([]);
@@ -310,6 +319,40 @@ function App() {
     } catch (error) {
       setLoginError(error.message || "Invalid username or password. Try jakka.vikram / Vikram@123 or gaurav.kumar / Gaurav@123.");
     }
+  }
+
+  async function handleSignUp() {
+    setLoginError("");
+
+    if (mockFlow) {
+      const user = {
+        id: "mock-new-user",
+        username: signupForm.username || "new.parent",
+        firstName: signupForm.firstName || "New",
+        lastName: signupForm.lastName || "Parent",
+        email: signupForm.email || "new.parent@example.com",
+      };
+      setAuthUser(user);
+      setUsername(user.username);
+      setIsAuthenticated(true);
+      await loadWorkspace(user);
+      return;
+    }
+
+    try {
+      const response = await signUpUser(signupForm);
+      setAuthUser(response.user);
+      setUsername(response.user.username);
+      setPassword("");
+      setIsAuthenticated(true);
+      await loadWorkspace(response.user);
+    } catch (error) {
+      setLoginError(error.message || "Unable to create account. Check the form and try again.");
+    }
+  }
+
+  function updateSignupField(field, value) {
+    setSignupForm((current) => ({ ...current, [field]: value }));
   }
 
   function aiContext() {
@@ -773,13 +816,14 @@ function App() {
           ) : (
             <form className="auth-form" onSubmit={(event) => event.preventDefault()}>
               <div className="section-heading"><p className="eyebrow">Create Account</p><h2>Sign up securely</h2></div>
-              <label>Username<input autoComplete="username" name="username" onChange={(event) => setUsername(event.target.value)} type="text" value={username} /></label>
-              <label>First Name<input autoComplete="given-name" name="firstName" type="text" /></label>
-              <label>Last Name<input autoComplete="family-name" name="lastName" type="text" /></label>
-              <label>Phone Number<input autoComplete="tel" name="phoneNumber" type="tel" /></label>
-              <label>Email<input autoComplete="email" name="email" type="email" /></label>
-              <label>Password<input autoComplete="new-password" name="password" type="password" /></label>
-              <div className="todo-note">TODO: Connect sign-up form to backend account creation.</div>
+              <label>Username<input autoComplete="username" name="username" onChange={(event) => updateSignupField("username", event.target.value)} type="text" value={signupForm.username} /></label>
+              <label>First Name<input autoComplete="given-name" name="firstName" onChange={(event) => updateSignupField("firstName", event.target.value)} type="text" value={signupForm.firstName} /></label>
+              <label>Last Name<input autoComplete="family-name" name="lastName" onChange={(event) => updateSignupField("lastName", event.target.value)} type="text" value={signupForm.lastName} /></label>
+              <label>Phone Number<input autoComplete="tel" name="phoneNumber" onChange={(event) => updateSignupField("phoneNumber", event.target.value)} type="tel" value={signupForm.phoneNumber} /></label>
+              <label>Email<input autoComplete="email" name="email" onChange={(event) => updateSignupField("email", event.target.value)} type="email" value={signupForm.email} /></label>
+              <label>Password<input autoComplete="new-password" name="password" onChange={(event) => updateSignupField("password", event.target.value)} type="password" value={signupForm.password} /></label>
+              {loginError && <div className="error-banner">{loginError}</div>}
+              <button className="primary-action" onClick={handleSignUp} type="button">Create Account</button>
             </form>
           )}
         </section>

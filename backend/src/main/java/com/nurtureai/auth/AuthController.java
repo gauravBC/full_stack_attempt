@@ -24,11 +24,13 @@ public class AuthController {
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
     AuthResponse signUp(@Valid @RequestBody SignUpRequest request) {
+        AuthenticatedUser user = authService.signUp(request);
+
         return new AuthResponse(
             UUID.randomUUID().toString(),
-            request.username(),
-            "TODO: Hash password with Argon2/bcrypt and persist user.",
-            null
+            user.username(),
+            "Account created. TODO: replace SHA-256 with Argon2/bcrypt and issue secure session/JWT.",
+            user
         );
     }
 

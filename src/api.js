@@ -67,6 +67,27 @@ export async function loginUser(username, password) {
   }
 }
 
+export async function signUpUser(profile) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(profile),
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response, "Unable to create account"));
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("Backend is not reachable from this hosted site. Configure REACT_APP_API_BASE_URL with a public backend HTTPS URL, or use ?MockFlow=Y for UI testing.");
+    }
+    throw error;
+  }
+}
+
 
 export async function fetchAiStatus() {
   const response = await fetch(`${API_BASE_URL}/ai/status`);

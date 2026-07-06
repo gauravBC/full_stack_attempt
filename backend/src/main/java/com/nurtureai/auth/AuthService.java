@@ -1,9 +1,12 @@
 package com.nurtureai.auth;
 
 import com.nurtureai.auth.dto.LoginRequest;
+import com.nurtureai.auth.dto.SignUpRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +44,39 @@ public class AuthService {
                 );
             },
             request.username()
+        );
+    }
+
+    public AuthenticatedUser signUp(SignUpRequest request) {
+        String userId = UUID.randomUUID().toString();
+
+        try {
+            jdbcTemplate.update(
+                """
+                    insert into users (
+                        id, email, display_name, username, first_name, last_name,
+                        phone_number, password_hash
+                    ) values (?::uuid, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                userId,
+                request.email(),
+                request.firstName() + " " + request.lastName(),
+                request.username(),
+                request.firstName(),
+                request.lastName(),
+                request.phoneNumber(),
+                "sha256:" + sha256(request.password())
+            );
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateAccountException();
+        }
+
+        return new AuthenticatedUser(
+            userId,
+            request.username(),
+            request.firstName(),
+            request.lastName(),
+            request.email()
         );
     }
 
